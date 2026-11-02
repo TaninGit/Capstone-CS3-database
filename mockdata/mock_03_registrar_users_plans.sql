@@ -31,11 +31,11 @@ JOIN curriculum_versions cv ON cv.academic_year = 2567;
 WITH student_track AS (
   SELECT v.student_id, t.track_id
   FROM (VALUES
-    ('67130500003', 'แผน 3 %'),
-    ('67130500004', 'แผน 4 %'),
-    ('67130500005', 'แผน 7 %')
-  ) AS v(student_id, track_prefix)
-  JOIN tracks t ON t.track_name LIKE v.track_prefix
+    ('67130500003', 'Full-Stack Developer'),
+    ('67130500004', 'AI Developer'),
+    ('67130500005', 'Data Engineer')
+  ) AS v(student_id, track_en)
+  JOIN tracks t ON t.track_name_en = v.track_en
 ),
 std_courses AS (
   SELECT cc.curriculum_version_id, ccc.course_id, ccc.standard_year, ccc.standard_semester, NULL::int AS track_id
@@ -104,13 +104,13 @@ INSERT INTO study_plans (user_id, curriculum_version_id, track_id, plan_name, is
 SELECT u.user_id, cv.curriculum_version_id, t.track_id, 'แผนการเรียนของฉัน', true, now(), now()
 FROM (VALUES
   ('68130500002', NULL),
-  ('67130500003', 'แผน 3 %'),
-  ('67130500004', 'แผน 4 %'),
-  ('67130500005', 'แผน 7 %')
-) AS v(student_id, track_prefix)
+  ('67130500003', 'Full-Stack Developer'),
+  ('67130500004', 'AI Developer'),
+  ('67130500005', 'Data Engineer')
+) AS v(student_id, track_en)
 JOIN users u ON u.student_id = v.student_id
 JOIN curriculum_versions cv ON cv.academic_year = 2567
-LEFT JOIN tracks t ON t.track_name LIKE v.track_prefix;
+LEFT JOIN tracks t ON t.track_name_en = v.track_en;
 
 INSERT INTO study_plan_courses (study_plan_id, course_id, study_year, study_semester)
 SELECT sp.study_plan_id, c.course_id, v.y, v.s
