@@ -9,111 +9,27 @@ INSERT INTO curriculum_versions (version_name, academic_year, total_credits, is_
 VALUES ('หลักสูตรวิทยาศาสตรบัณฑิต สาขาวิชาเทคโนโลยีสารสนเทศ หลักสูตรปรับปรุง พ.ศ. 2567', 2567, 128, true, now(), now());
 
 -- 2) categories
+-- จัดเป็น 5 หมวดแบบแบนตามโครงสร้างหน่วยกิตของหลักสูตร (ข้อ 1 / 2.1 / 2.2 / 2.3 / 3 = 27 + 60 + 21 + 14 + 6 = 128)
+-- วิชาในหมวด 2.2 จะเป็นวิชาบังคับหรือไม่ ขึ้นกับ track ที่เลือก (ดู track_courses)
 INSERT INTO categories (code, category_name_th, category_name_en, created_at, updated_at) VALUES
   ('GE', 'หมวดวิชาศึกษาทั่วไป', 'General Education', now(), now()),
-  ('GE_ETHICS', 'กลุ่มวิชาคุณธรรม จริยธรรมในการดำเนินชีวิต', 'Morality and Ethics in Life', now(), now()),
-  ('GE_LIFELONG', 'กลุ่มวิชาการเรียนรู้ตลอดชีวิต', 'Lifelong Learning', now(), now()),
-  ('GE_SYSTEMS', 'กลุ่มวิชาการคิดอย่างมีระบบ', 'Systematic Thinking', now(), now()),
-  ('GE_AESTHETICS', 'กลุ่มวิชาคุณค่าและความงาม', 'Value and Aesthetics', now(), now()),
-  ('GE_TECHMGMT', 'กลุ่มวิชาเทคโนโลยี นวัตกรรมและการจัดการ', 'Technology, Innovation and Management', now(), now()),
-  ('GE_LANG', 'กลุ่มวิชาภาษาและการสื่อสาร', 'Language and Communication', now(), now()),
-  ('MAJOR', 'หมวดวิชาเฉพาะ', 'Major Courses', now(), now()),
   ('MAJOR_FOUNDATION', 'วิชาพื้นฐานทางเทคโนโลยีสารสนเทศ', 'IT Foundation Courses', now(), now()),
-  ('FND_IT', 'เทคโนโลยีสารสนเทศ', 'Information Technology', now(), now()),
-  ('FND_BUSINESS', 'ธุรกิจและความเป็นมืออาชีพ', 'Business and Professionalism', now(), now()),
-  ('FND_UX', 'การออกแบบประสบการณ์ของผู้ใช้และส่วนต่อประสาน', 'UX/UI Design', now(), now()),
-  ('FND_INFRA', 'โครงสร้างพื้นฐานของระบบ', 'System Infrastructure', now(), now()),
-  ('FND_SWDEV', 'การพัฒนาซอฟต์แวร์', 'Software Development', now(), now()),
-  ('FND_DATA', 'ข้อมูลและวิทยาการข้อมูล', 'Data and Data Science', now(), now()),
-  ('FND_DB', 'ฐานข้อมูล', 'Database', now(), now()),
   ('MAJOR_ADVANCED', 'วิชาเชิงลึกทางเทคโนโลยีสารสนเทศ', 'IT Advanced Courses', now(), now()),
-  ('ADV_REQ', 'วิชาบังคับเลือก (ตามแผนการเรียน)', 'Required Electives (by Study Plan)', now(), now()),
-  ('ADV_UX', 'การออกแบบประสบการณ์ของผู้ใช้และส่วนต่อประสาน (วิชาเชิงลึก)', 'UX/UI Design (Advanced)', now(), now()),
-  ('ADV_SWDEV', 'การพัฒนาซอฟต์แวร์ (วิชาเชิงลึก)', 'Software Development (Advanced)', now(), now()),
-  ('ADV_FE', 'การพัฒนาฟรอนเอนด์', 'Frontend Development', now(), now()),
-  ('ADV_BE', 'การพัฒนาแบ็กเอนด์', 'Backend Development', now(), now()),
-  ('ADV_AI', 'ปัญญาประดิษฐ์', 'Artificial Intelligence', now(), now()),
-  ('ADV_DS', 'วิทยาการข้อมูล', 'Data Science', now(), now()),
-  ('ADV_DBDE', 'ฐานข้อมูลและวิศวกรรมข้อมูล', 'Database and Data Engineering', now(), now()),
-  ('ADV_ELECTIVE', 'วิชาเลือกทางเทคโนโลยีสารสนเทศ', 'IT Electives', now(), now()),
-  ('ELEC_IT', 'วิชาเลือก สาขาวิชาเทคโนโลยีสารสนเทศ', 'Electives - Information Technology', now(), now()),
-  ('ELEC_CS', 'วิชาเลือก สาขาวิชาวิทยาการคอมพิวเตอร์', 'Electives - Computer Science', now(), now()),
-  ('ELEC_DSI', 'วิชาเลือก สาขาวิชานวัตกรรมบริการดิจิทัล', 'Electives - Digital Service Innovation', now(), now()),
   ('PROJECT', 'การเรียนรู้ผ่านการทำโครงงานหรือประสบการณ์การทำงาน', 'Project-based and Work Experience Learning', now(), now()),
   ('FREE_ELECTIVE', 'หมวดวิชาเลือกเสรี', 'Free Electives', now(), now());
 
--- 3) curriculum_categories (โครงสร้างหลักสูตรแบบลำดับชั้น)
--- หมายเหตุ: required_credits = 0 หมายถึงหน่วยกิตขึ้นกับแผนการเรียนที่เลือก (ดู tracks.required_credits)
--- ระดับ 0
-INSERT INTO curriculum_categories (curriculum_version_id, category_id, parent_curriculum_category_id, required_credits, created_at, updated_at)
-SELECT cv.curriculum_version_id, ca.category_id, pcc.curriculum_category_id, v.credits, now(), now()
+-- 3) curriculum_categories
+INSERT INTO curriculum_categories (curriculum_version_id, category_id, parent_curriculum_category_id, required_credits, sort_order, created_at, updated_at)
+SELECT cv.curriculum_version_id, ca.category_id, NULL, v.credits, v.sort_order, now(), now()
 FROM (VALUES
-  ('GE', NULL, 27),
-  ('MAJOR', NULL, 95),
-  ('FREE_ELECTIVE', NULL, 6)
-) AS v(code, parent_code, credits)
+  ('GE', 27, 1),
+  ('MAJOR_FOUNDATION', 60, 2),
+  ('MAJOR_ADVANCED', 21, 3),
+  ('PROJECT', 14, 4),
+  ('FREE_ELECTIVE', 6, 5)
+) AS v(code, credits, sort_order)
 JOIN curriculum_versions cv ON cv.academic_year = 2567
-JOIN categories ca ON ca.code = v.code
-LEFT JOIN categories pca ON pca.code = v.parent_code
-LEFT JOIN curriculum_categories pcc ON pcc.category_id = pca.category_id AND pcc.curriculum_version_id = cv.curriculum_version_id;
-
--- ระดับ 1
-INSERT INTO curriculum_categories (curriculum_version_id, category_id, parent_curriculum_category_id, required_credits, created_at, updated_at)
-SELECT cv.curriculum_version_id, ca.category_id, pcc.curriculum_category_id, v.credits, now(), now()
-FROM (VALUES
-  ('GE_ETHICS', 'GE', 3),
-  ('GE_LIFELONG', 'GE', 3),
-  ('GE_SYSTEMS', 'GE', 3),
-  ('GE_AESTHETICS', 'GE', 3),
-  ('GE_TECHMGMT', 'GE', 3),
-  ('GE_LANG', 'GE', 12),
-  ('MAJOR_FOUNDATION', 'MAJOR', 60),
-  ('MAJOR_ADVANCED', 'MAJOR', 21),
-  ('PROJECT', 'MAJOR', 14)
-) AS v(code, parent_code, credits)
-JOIN curriculum_versions cv ON cv.academic_year = 2567
-JOIN categories ca ON ca.code = v.code
-LEFT JOIN categories pca ON pca.code = v.parent_code
-LEFT JOIN curriculum_categories pcc ON pcc.category_id = pca.category_id AND pcc.curriculum_version_id = cv.curriculum_version_id;
-
--- ระดับ 2
-INSERT INTO curriculum_categories (curriculum_version_id, category_id, parent_curriculum_category_id, required_credits, created_at, updated_at)
-SELECT cv.curriculum_version_id, ca.category_id, pcc.curriculum_category_id, v.credits, now(), now()
-FROM (VALUES
-  ('FND_IT', 'MAJOR_FOUNDATION', 7),
-  ('FND_BUSINESS', 'MAJOR_FOUNDATION', 7),
-  ('FND_UX', 'MAJOR_FOUNDATION', 3),
-  ('FND_INFRA', 'MAJOR_FOUNDATION', 11),
-  ('FND_SWDEV', 'MAJOR_FOUNDATION', 23),
-  ('FND_DATA', 'MAJOR_FOUNDATION', 6),
-  ('FND_DB', 'MAJOR_FOUNDATION', 3),
-  ('ADV_REQ', 'MAJOR_ADVANCED', 0),
-  ('ADV_ELECTIVE', 'MAJOR_ADVANCED', 0)
-) AS v(code, parent_code, credits)
-JOIN curriculum_versions cv ON cv.academic_year = 2567
-JOIN categories ca ON ca.code = v.code
-LEFT JOIN categories pca ON pca.code = v.parent_code
-LEFT JOIN curriculum_categories pcc ON pcc.category_id = pca.category_id AND pcc.curriculum_version_id = cv.curriculum_version_id;
-
--- ระดับ 3
-INSERT INTO curriculum_categories (curriculum_version_id, category_id, parent_curriculum_category_id, required_credits, created_at, updated_at)
-SELECT cv.curriculum_version_id, ca.category_id, pcc.curriculum_category_id, v.credits, now(), now()
-FROM (VALUES
-  ('ADV_UX', 'ADV_REQ', 0),
-  ('ADV_SWDEV', 'ADV_REQ', 0),
-  ('ADV_FE', 'ADV_REQ', 0),
-  ('ADV_BE', 'ADV_REQ', 0),
-  ('ADV_AI', 'ADV_REQ', 0),
-  ('ADV_DS', 'ADV_REQ', 0),
-  ('ADV_DBDE', 'ADV_REQ', 0),
-  ('ELEC_IT', 'ADV_ELECTIVE', 0),
-  ('ELEC_CS', 'ADV_ELECTIVE', 0),
-  ('ELEC_DSI', 'ADV_ELECTIVE', 0)
-) AS v(code, parent_code, credits)
-JOIN curriculum_versions cv ON cv.academic_year = 2567
-JOIN categories ca ON ca.code = v.code
-LEFT JOIN categories pca ON pca.code = v.parent_code
-LEFT JOIN curriculum_categories pcc ON pcc.category_id = pca.category_id AND pcc.curriculum_version_id = cv.curriculum_version_id;
+JOIN categories ca ON ca.code = v.code;
 
 -- 4) courses (151 รายวิชา)
 INSERT INTO courses (course_code, name_th, name_en, credits, description_th, description_en, is_active, created_at, updated_at) VALUES
@@ -273,239 +189,304 @@ INSERT INTO courses (course_code, name_th, name_en, credits, description_th, des
 INSERT INTO curriculum_category_courses (curriculum_category_id, course_id, is_required, standard_year, standard_semester)
 SELECT cc.curriculum_category_id, c.course_id, v.is_required, v.std_year, v.std_sem
 FROM (VALUES
-  ('ELEC_CS', 'CSC200', false, NULL, NULL),
-  ('ELEC_CS', 'CSC233', false, NULL, NULL),
-  ('ELEC_CS', 'CSC234', false, NULL, NULL),
-  ('ELEC_CS', 'CSC332', false, NULL, NULL),
-  ('ELEC_CS', 'CSC335', false, NULL, NULL),
-  ('ELEC_CS', 'CSC344', false, NULL, NULL),
-  ('ELEC_CS', 'CSC371', false, NULL, NULL),
-  ('ELEC_CS', 'CSC536', false, NULL, NULL),
-  ('ELEC_CS', 'CSC561', false, NULL, NULL),
-  ('ELEC_DSI', 'DSI106', false, NULL, NULL),
-  ('ELEC_DSI', 'DSI111', false, NULL, NULL),
-  ('ELEC_DSI', 'DSI112', false, NULL, NULL),
-  ('ELEC_DSI', 'DSI113', false, NULL, NULL),
-  ('ELEC_DSI', 'DSI117', false, NULL, NULL),
-  ('ELEC_DSI', 'DSI205', false, NULL, NULL),
-  ('ELEC_DSI', 'DSI206', false, NULL, NULL),
-  ('ELEC_DSI', 'DSI207', false, NULL, NULL),
-  ('ELEC_DSI', 'DSI208', false, NULL, NULL),
-  ('ELEC_DSI', 'DSI209', false, NULL, NULL),
-  ('ELEC_DSI', 'DSI210', false, NULL, NULL),
-  ('GE_ETHICS', 'GEN111', true, 3, 1),
-  ('GE_LIFELONG', 'GEN121', true, 1, 1),
-  ('GE_SYSTEMS', 'GEN231', true, 2, 2),
-  ('GE_AESTHETICS', 'GEN241', true, 4, 1),
-  ('GE_TECHMGMT', 'GEN351', true, 3, 2),
-  ('FND_IT', 'INT100', true, 1, 1),
-  ('FND_IT', 'INT101', true, 1, 1),
-  ('FND_IT', 'INT102', true, 2, 2),
-  ('FND_IT', 'INT105', true, 3, 1),
-  ('FND_BUSINESS', 'INT110', true, 1, 1),
-  ('FND_BUSINESS', 'INT111', true, 2, 2),
-  ('FND_BUSINESS', 'INT115', true, 4, 1),
-  ('FND_BUSINESS', 'INT116', true, 3, 2),
-  ('FND_UX', 'INT120', true, 1, 1),
-  ('FND_INFRA', 'INT130', true, 1, 1),
-  ('FND_INFRA', 'INT131', true, 1, 2),
-  ('FND_INFRA', 'INT132', true, 1, 2),
-  ('FND_INFRA', 'INT133', true, 1, 2),
-  ('FND_INFRA', 'INT134', true, 2, 1),
-  ('FND_INFRA', 'INT135', true, 1, 2),
-  ('FND_INFRA', 'INT136', true, 3, 1),
-  ('FND_SWDEV', 'INT140', true, 1, 1),
-  ('FND_SWDEV', 'INT141', true, 1, 2),
-  ('FND_SWDEV', 'INT142', true, 1, 2),
-  ('FND_SWDEV', 'INT143', true, 1, 1),
-  ('FND_SWDEV', 'INT144', true, 2, 1),
-  ('FND_SWDEV', 'INT145', true, 3, 1),
-  ('FND_SWDEV', 'INT146', true, 3, 2),
-  ('FND_SWDEV', 'INT147', true, 4, 1),
-  ('FND_SWDEV', 'INT150', true, 1, 2),
-  ('FND_SWDEV', 'INT151', true, 2, 1),
-  ('FND_SWDEV', 'INT161', true, 2, 1),
-  ('FND_DATA', 'INT180', true, 1, 1),
-  ('FND_DATA', 'INT182', true, 2, 1),
-  ('FND_DATA', 'INT185', true, 2, 2),
-  ('FND_DATA', 'INT189', true, 3, 2),
-  ('FND_DB', 'INT190', true, 1, 2),
-  ('FND_DB', 'INT191', true, 2, 1),
-  ('ADV_UX', 'INT220', false, 2, 2),
-  ('ADV_UX', 'INT221', false, 3, 1),
-  ('ADV_UX', 'INT222', false, 3, 2),
-  ('ADV_SWDEV', 'INT240', false, 2, 2),
-  ('ADV_SWDEV', 'INT241', false, 3, 2),
-  ('ADV_SWDEV', 'INT242', false, 2, 2),
-  ('ADV_SWDEV', 'INT243', false, 2, 2),
-  ('ADV_FE', 'INT250', false, 2, 2),
-  ('ADV_FE', 'INT251', false, 3, 1),
-  ('ADV_BE', 'INT261', false, 3, 1),
-  ('ADV_AI', 'INT270', false, 2, 2),
-  ('ADV_AI', 'INT271', false, 3, 1),
-  ('ADV_AI', 'INT272', false, 3, 1),
-  ('ADV_AI', 'INT273', false, 3, 1),
-  ('ADV_DS', 'INT282', false, 2, 2),
-  ('ADV_DS', 'INT285', false, 3, 2),
-  ('ADV_DBDE', 'INT290', false, 2, 2),
-  ('ADV_DBDE', 'INT291', false, 2, 2),
-  ('ADV_DBDE', 'INT292', false, 2, 2),
-  ('ADV_DBDE', 'INT293', false, 3, 1),
-  ('ADV_DBDE', 'INT294', false, 3, 1),
-  ('ADV_DBDE', 'INT295', false, 3, 1),
-  ('ADV_DBDE', 'INT296', false, 3, 2),
-  ('ADV_DBDE', 'INT297', false, 3, 2),
-  ('ELEC_IT', 'INT300', false, NULL, NULL),
-  ('ELEC_IT', 'INT301', false, NULL, NULL),
-  ('ELEC_IT', 'INT302', false, NULL, NULL),
-  ('ELEC_IT', 'INT310', false, NULL, NULL),
-  ('ELEC_IT', 'INT311', false, NULL, NULL),
-  ('ELEC_IT', 'INT312', false, NULL, NULL),
-  ('ELEC_IT', 'INT313', false, NULL, NULL),
-  ('ELEC_IT', 'INT330', false, NULL, NULL),
-  ('ELEC_IT', 'INT331', false, NULL, NULL),
-  ('ELEC_IT', 'INT332', false, NULL, NULL),
-  ('ELEC_IT', 'INT333', false, NULL, NULL),
-  ('ELEC_IT', 'INT334', false, NULL, NULL),
-  ('ELEC_IT', 'INT341', false, NULL, NULL),
-  ('ELEC_IT', 'INT342', false, NULL, NULL),
-  ('ELEC_IT', 'INT343', false, NULL, NULL),
-  ('ELEC_IT', 'INT344', false, NULL, NULL),
-  ('ELEC_IT', 'INT370', false, 3, 2),
-  ('ELEC_IT', 'INT371', false, 3, 2),
-  ('ELEC_IT', 'INT380', false, NULL, NULL),
-  ('ELEC_IT', 'INT381', false, NULL, NULL),
-  ('ELEC_IT', 'INT390', false, NULL, NULL),
-  ('ELEC_IT', 'INT401', false, NULL, NULL),
-  ('ELEC_IT', 'INT402', false, NULL, NULL),
-  ('ELEC_IT', 'INT403', false, NULL, NULL),
-  ('ELEC_IT', 'INT407', false, NULL, NULL),
-  ('ELEC_IT', 'INT408', false, NULL, NULL),
-  ('ELEC_IT', 'INT409', false, NULL, NULL),
-  ('ELEC_IT', 'INT421', false, NULL, NULL),
-  ('ELEC_IT', 'INT422', false, NULL, NULL),
-  ('ELEC_IT', 'INT423', false, NULL, NULL),
-  ('ELEC_IT', 'INT427', false, NULL, NULL),
-  ('ELEC_IT', 'INT428', false, NULL, NULL),
-  ('ELEC_IT', 'INT429', false, NULL, NULL),
-  ('ELEC_IT', 'INT441', false, NULL, NULL),
-  ('ELEC_IT', 'INT442', false, NULL, NULL),
-  ('ELEC_IT', 'INT443', false, NULL, NULL),
-  ('ELEC_IT', 'INT447', false, NULL, NULL),
-  ('ELEC_IT', 'INT448', false, NULL, NULL),
-  ('ELEC_IT', 'INT449', false, NULL, NULL),
-  ('ELEC_IT', 'INT471', false, NULL, NULL),
-  ('ELEC_IT', 'INT472', false, NULL, NULL),
-  ('ELEC_IT', 'INT473', false, NULL, NULL),
-  ('ELEC_IT', 'INT477', false, NULL, NULL),
-  ('ELEC_IT', 'INT478', false, NULL, NULL),
-  ('ELEC_IT', 'INT479', false, NULL, NULL),
-  ('ELEC_IT', 'INT481', false, NULL, NULL),
-  ('ELEC_IT', 'INT482', false, NULL, NULL),
-  ('ELEC_IT', 'INT483', false, NULL, NULL),
-  ('ELEC_IT', 'INT487', false, NULL, NULL),
-  ('ELEC_IT', 'INT488', false, NULL, NULL),
-  ('ELEC_IT', 'INT489', false, NULL, NULL),
-  ('ELEC_IT', 'INT491', false, NULL, NULL),
-  ('ELEC_IT', 'INT492', false, NULL, NULL),
-  ('ELEC_IT', 'INT493', false, NULL, NULL),
-  ('ELEC_IT', 'INT497', false, NULL, NULL),
-  ('ELEC_IT', 'INT498', false, NULL, NULL),
-  ('ELEC_IT', 'INT499', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'CSC200', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'CSC233', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'CSC234', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'CSC332', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'CSC335', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'CSC344', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'CSC371', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'CSC536', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'CSC561', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'DSI106', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'DSI111', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'DSI112', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'DSI113', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'DSI117', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'DSI205', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'DSI206', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'DSI207', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'DSI208', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'DSI209', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'DSI210', false, NULL, NULL),
+  ('GE', 'GEN111', true, 3, 1),
+  ('GE', 'GEN121', true, 1, 1),
+  ('GE', 'GEN231', true, 2, 2),
+  ('GE', 'GEN241', true, 4, 1),
+  ('GE', 'GEN351', true, 3, 2),
+  ('MAJOR_FOUNDATION', 'INT100', true, 1, 1),
+  ('MAJOR_FOUNDATION', 'INT101', true, 1, 1),
+  ('MAJOR_FOUNDATION', 'INT102', true, 2, 2),
+  ('MAJOR_FOUNDATION', 'INT105', true, 3, 1),
+  ('MAJOR_FOUNDATION', 'INT110', true, 1, 1),
+  ('MAJOR_FOUNDATION', 'INT111', true, 2, 2),
+  ('MAJOR_FOUNDATION', 'INT115', true, 4, 1),
+  ('MAJOR_FOUNDATION', 'INT116', true, 3, 2),
+  ('MAJOR_FOUNDATION', 'INT120', true, 1, 1),
+  ('MAJOR_FOUNDATION', 'INT130', true, 1, 1),
+  ('MAJOR_FOUNDATION', 'INT131', true, 1, 2),
+  ('MAJOR_FOUNDATION', 'INT132', true, 1, 2),
+  ('MAJOR_FOUNDATION', 'INT133', true, 1, 2),
+  ('MAJOR_FOUNDATION', 'INT134', true, 2, 1),
+  ('MAJOR_FOUNDATION', 'INT135', true, 1, 2),
+  ('MAJOR_FOUNDATION', 'INT136', true, 3, 1),
+  ('MAJOR_FOUNDATION', 'INT140', true, 1, 1),
+  ('MAJOR_FOUNDATION', 'INT141', true, 1, 2),
+  ('MAJOR_FOUNDATION', 'INT142', true, 1, 2),
+  ('MAJOR_FOUNDATION', 'INT143', true, 1, 1),
+  ('MAJOR_FOUNDATION', 'INT144', true, 2, 1),
+  ('MAJOR_FOUNDATION', 'INT145', true, 3, 1),
+  ('MAJOR_FOUNDATION', 'INT146', true, 3, 2),
+  ('MAJOR_FOUNDATION', 'INT147', true, 4, 1),
+  ('MAJOR_FOUNDATION', 'INT150', true, 1, 2),
+  ('MAJOR_FOUNDATION', 'INT151', true, 2, 1),
+  ('MAJOR_FOUNDATION', 'INT161', true, 2, 1),
+  ('MAJOR_FOUNDATION', 'INT180', true, 1, 1),
+  ('MAJOR_FOUNDATION', 'INT182', true, 2, 1),
+  ('MAJOR_FOUNDATION', 'INT185', true, 2, 2),
+  ('MAJOR_FOUNDATION', 'INT189', true, 3, 2),
+  ('MAJOR_FOUNDATION', 'INT190', true, 1, 2),
+  ('MAJOR_FOUNDATION', 'INT191', true, 2, 1),
+  ('MAJOR_ADVANCED', 'INT220', false, 2, 2),
+  ('MAJOR_ADVANCED', 'INT221', false, 3, 1),
+  ('MAJOR_ADVANCED', 'INT222', false, 3, 2),
+  ('MAJOR_ADVANCED', 'INT240', false, 2, 2),
+  ('MAJOR_ADVANCED', 'INT241', false, 3, 2),
+  ('MAJOR_ADVANCED', 'INT242', false, 2, 2),
+  ('MAJOR_ADVANCED', 'INT243', false, 2, 2),
+  ('MAJOR_ADVANCED', 'INT250', false, 2, 2),
+  ('MAJOR_ADVANCED', 'INT251', false, 3, 1),
+  ('MAJOR_ADVANCED', 'INT261', false, 3, 1),
+  ('MAJOR_ADVANCED', 'INT270', false, 2, 2),
+  ('MAJOR_ADVANCED', 'INT271', false, 3, 1),
+  ('MAJOR_ADVANCED', 'INT272', false, 3, 1),
+  ('MAJOR_ADVANCED', 'INT273', false, 3, 1),
+  ('MAJOR_ADVANCED', 'INT282', false, 2, 2),
+  ('MAJOR_ADVANCED', 'INT285', false, 3, 2),
+  ('MAJOR_ADVANCED', 'INT290', false, 2, 2),
+  ('MAJOR_ADVANCED', 'INT291', false, 2, 2),
+  ('MAJOR_ADVANCED', 'INT292', false, 2, 2),
+  ('MAJOR_ADVANCED', 'INT293', false, 3, 1),
+  ('MAJOR_ADVANCED', 'INT294', false, 3, 1),
+  ('MAJOR_ADVANCED', 'INT295', false, 3, 1),
+  ('MAJOR_ADVANCED', 'INT296', false, 3, 2),
+  ('MAJOR_ADVANCED', 'INT297', false, 3, 2),
+  ('MAJOR_ADVANCED', 'INT300', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT301', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT302', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT310', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT311', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT312', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT313', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT330', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT331', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT332', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT333', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT334', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT341', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT342', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT343', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT344', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT370', false, 3, 2),
+  ('MAJOR_ADVANCED', 'INT371', false, 3, 2),
+  ('MAJOR_ADVANCED', 'INT380', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT381', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT390', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT401', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT402', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT403', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT407', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT408', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT409', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT421', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT422', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT423', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT427', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT428', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT429', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT441', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT442', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT443', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT447', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT448', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT449', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT471', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT472', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT473', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT477', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT478', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT479', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT481', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT482', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT483', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT487', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT488', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT489', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT491', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT492', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT493', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT497', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT498', false, NULL, NULL),
+  ('MAJOR_ADVANCED', 'INT499', false, NULL, NULL),
   ('PROJECT', 'INT504', true, 2, 1),
   ('PROJECT', 'INT505', false, 3, 2),
   ('PROJECT', 'INT506', false, 4, 1),
   ('PROJECT', 'INT507', false, 3, 2),
   ('PROJECT', 'INT508', false, 4, 1),
   ('PROJECT', 'INT509', true, 4, 2),
-  ('GE_LANG', 'LNG202', true, 2, 1),
-  ('GE_LANG', 'LNG220', true, 1, 2),
-  ('GE_LANG', 'LNG304', true, 2, 2),
-  ('GE_LANG', 'LNG308', true, 3, 1),
-  ('GE_LANG', 'LNG320', true, 3, 2),
-  ('GE_LANG', 'LNG332', true, 4, 1)
+  ('GE', 'LNG202', true, 2, 1),
+  ('GE', 'LNG220', true, 1, 2),
+  ('GE', 'LNG304', true, 2, 2),
+  ('GE', 'LNG308', true, 3, 1),
+  ('GE', 'LNG320', true, 3, 2),
+  ('GE', 'LNG332', true, 4, 1)
 ) AS v(cat_code, course_code, is_required, std_year, std_sem)
 JOIN curriculum_versions cv ON cv.academic_year = 2567
 JOIN categories ca ON ca.code = v.cat_code
 JOIN curriculum_categories cc ON cc.category_id = ca.category_id AND cc.curriculum_version_id = cv.curriculum_version_id
 JOIN courses c ON c.course_code = v.course_code;
 
--- 6) tracks (9 แผนการเรียน/สายอาชีพ)
--- required_credits = หน่วยกิตรวมของวิชาบังคับเลือกในหมวด 2.2.1 ของแผนนั้น (ส่วนที่เหลือจาก 21 หน่วยกิตของหมวด 2.2 เป็นวิชาเลือก 2.2.2)
-INSERT INTO tracks (curriculum_version_id, track_name, description, required_credits, created_at, updated_at)
-SELECT cv.curriculum_version_id, v.track_name, v.description, v.credits, now(), now()
-FROM (VALUES
-  ('แผน 1 นักพัฒนาฟรอนเอนด์ (Frontend Developer)', 'รหัสแผน FE - วิชาเชิงลึกบังคับเลือกหมวด 2.2.1 จัดไว้ในภาคการศึกษาที่ 4-6', 12),
-  ('แผน 2 นักพัฒนาแบ็กเอนด์ (Backend Developer)', 'รหัสแผน BE - วิชาเชิงลึกบังคับเลือกหมวด 2.2.1 จัดไว้ในภาคการศึกษาที่ 4-6', 12),
-  ('แผน 3 นักพัฒนาฟูลสแตก (Full-Stack Developer)', 'รหัสแผน FS - วิชาเชิงลึกบังคับเลือกหมวด 2.2.1 จัดไว้ในภาคการศึกษาที่ 4-6', 18),
-  ('แผน 4 นักพัฒนาปัญญาประดิษฐ์ (AI Developer)', 'รหัสแผน AI - วิชาเชิงลึกบังคับเลือกหมวด 2.2.1 จัดไว้ในภาคการศึกษาที่ 4-6', 18),
-  ('แผน 5 นักวิทยาการข้อมูล (Data Scientist)', 'รหัสแผน DS - วิชาเชิงลึกบังคับเลือกหมวด 2.2.1 จัดไว้ในภาคการศึกษาที่ 4-6', 16),
-  ('แผน 6 นักวิเคราะห์ข้อมูล (Data Analyst)', 'รหัสแผน DA - วิชาเชิงลึกบังคับเลือกหมวด 2.2.1 จัดไว้ในภาคการศึกษาที่ 4-6', 14),
-  ('แผน 7 วิศวกรข้อมูล (Data Engineer)', 'รหัสแผน DE - วิชาเชิงลึกบังคับเลือกหมวด 2.2.1 จัดไว้ในภาคการศึกษาที่ 4-6', 11),
-  ('แผน 8 ผู้ดูแลฐานข้อมูล (Database Administrator)', 'รหัสแผน DB - วิชาเชิงลึกบังคับเลือกหมวด 2.2.1 จัดไว้ในภาคการศึกษาที่ 4-6', 7),
-  ('แผน 9 นักออกแบบประสบการณ์ของผู้ใช้และส่วนต่อประสาน (UX/UI Designer)', 'รหัสแผน UX - วิชาเชิงลึกบังคับเลือกหมวด 2.2.1 จัดไว้ในภาคการศึกษาที่ 4-6', 9)
-) AS v(track_name, description, credits)
-JOIN curriculum_versions cv ON cv.academic_year = 2567;
+-- 6) track_groups (หลักสูตรไม่ได้จัดกลุ่มไว้ — ทีมจัดเองตามวิชาบังคับเลือกที่แชร์กัน)
+INSERT INTO track_groups (group_name_th, group_name_en, sort_order, created_at, updated_at) VALUES
+  ('สายพัฒนาซอฟต์แวร์', 'Software Development', 1, now(), now()),
+  ('สายข้อมูลและ AI', 'Data and AI', 2, now(), now()),
+  ('สายออกแบบ', 'Design', 3, now(), now());
 
--- 7) track_courses
+-- 7) tracks (9 แผนการเรียน/สายอาชีพ)
+-- required_credits = หน่วยกิตรวมของวิชาบังคับเลือกในหมวด 2.2.1 ของแผนนั้น (ส่วนที่เหลือจาก 21 หน่วยกิตของหมวด 2.2 เป็นวิชาเลือก 2.2.2)
+-- ชื่อไทย/อังกฤษตามเล่มหลักสูตร, description ทีมเขียนเอง (หลักสูตรมีแค่ชื่ออาชีพ)
+INSERT INTO tracks (curriculum_version_id, track_group_id, track_name_th, track_name_en, description_th, description_en, required_credits, sort_order, created_at, updated_at)
+SELECT cv.curriculum_version_id, g.track_group_id, v.name_th, v.name_en, v.desc_th, v.desc_en, v.credits, v.sort_order, now(), now()
+FROM (VALUES
+  ('Software Development', 'นักพัฒนาฟรอนเอนด์', 'Frontend Developer',
+   'สร้างหน้าเว็บและแอปที่ผู้ใช้โต้ตอบได้ เน้น UI การทำงานฝั่ง client และประสิทธิภาพของหน้าเว็บ',
+   'Build web pages and interactive apps, focusing on UI, client-side logic and web performance.', 12, 1),
+  ('Software Development', 'นักพัฒนาแบ็กเอนด์', 'Backend Developer',
+   'ออกแบบ API ระบบฝั่ง server และการจัดการข้อมูลเบื้องหลังแอปพลิเคชัน',
+   'Design APIs, server-side systems and the data handling behind applications.', 12, 2),
+  ('Software Development', 'นักพัฒนาฟูลสแตก', 'Full-Stack Developer',
+   'พัฒนาได้ทั้งฝั่ง client และ server ส่งงานได้ครบทั้งระบบ',
+   'Develop both client and server sides and deliver complete systems end to end.', 18, 3),
+  ('Data and AI', 'นักพัฒนาปัญญาประดิษฐ์', 'AI Developer',
+   'สร้างและนำโมเดล machine learning ไปใช้งานจริงในระบบ',
+   'Build machine learning models and put them to work in real systems.', 18, 4),
+  ('Data and AI', 'นักวิทยาการข้อมูล', 'Data Scientist',
+   'ใช้สถิติและโมเดลหาคำตอบจากข้อมูล ทดลองและสื่อสารผลลัพธ์',
+   'Use statistics and models to answer questions with data, run experiments and communicate results.', 16, 5),
+  ('Data and AI', 'นักวิเคราะห์ข้อมูล', 'Data Analyst',
+   'วิเคราะห์และทำ dashboard ให้ข้อมูลช่วยตัดสินใจทางธุรกิจ',
+   'Analyse data and build dashboards that support business decisions.', 14, 6),
+  ('Data and AI', 'วิศวกรข้อมูล', 'Data Engineer',
+   'ออกแบบ pipeline และคลังข้อมูล ให้ข้อมูลพร้อมใช้งานในปริมาณมาก',
+   'Design data pipelines and warehouses that keep large volumes of data ready to use.', 11, 7),
+  ('Data and AI', 'ผู้ดูแลฐานข้อมูล', 'Database Administrator',
+   'ดูแลฐานข้อมูลให้เสถียร ปลอดภัย และทำงานได้เร็ว',
+   'Keep databases stable, secure and fast.', 7, 8),
+  ('Design', 'นักออกแบบประสบการณ์ของผู้ใช้และส่วนต่อประสาน', 'UX/UI Designer',
+   'ศึกษาผู้ใช้ ออกแบบประสบการณ์และหน้าจอที่ใช้งานง่าย แล้ววัดผลเพื่อปรับปรุง',
+   'Research users, design easy-to-use experiences and interfaces, and measure them to improve.', 9, 9)
+) AS v(group_en, name_th, name_en, desc_th, desc_en, credits, sort_order)
+JOIN curriculum_versions cv ON cv.academic_year = 2567
+JOIN track_groups g ON g.group_name_en = v.group_en;
+
+-- 8) related_tracks (track ใกล้เคียง)
+-- อิงจากวิชาบังคับเลือกที่แชร์กัน + ตัวอย่างในเล่มหลักสูตร "สาย Frontend Developer คู่กับสาย UX/UI Designer"
+INSERT INTO related_tracks (track_id, related_track_id, sort_order)
+SELECT t.track_id, r.track_id, v.sort_order
+FROM (VALUES
+  ('Frontend Developer', 'Full-Stack Developer', 1),
+  ('Frontend Developer', 'UX/UI Designer', 2),
+  ('Frontend Developer', 'Backend Developer', 3),
+  ('Backend Developer', 'Full-Stack Developer', 1),
+  ('Backend Developer', 'Frontend Developer', 2),
+  ('Full-Stack Developer', 'Frontend Developer', 1),
+  ('Full-Stack Developer', 'Backend Developer', 2),
+  ('AI Developer', 'Data Scientist', 1),
+  ('AI Developer', 'Data Analyst', 2),
+  ('Data Scientist', 'Data Analyst', 1),
+  ('Data Scientist', 'AI Developer', 2),
+  ('Data Scientist', 'Data Engineer', 3),
+  ('Data Analyst', 'Data Scientist', 1),
+  ('Data Analyst', 'AI Developer', 2),
+  ('Data Engineer', 'Database Administrator', 1),
+  ('Data Engineer', 'Data Scientist', 2),
+  ('Database Administrator', 'Data Engineer', 1),
+  ('UX/UI Designer', 'Frontend Developer', 1)
+) AS v(track_en, related_en, sort_order)
+JOIN tracks t ON t.track_name_en = v.track_en
+JOIN tracks r ON r.track_name_en = v.related_en;
+
+-- 9) track_courses
 INSERT INTO track_courses (track_id, course_id, is_required, standard_year, standard_semester)
 SELECT t.track_id, c.course_id, v.is_required, v.std_year, v.std_sem
 FROM (VALUES
-  ('แผน 1 นักพัฒนาฟรอนเอนด์ (Frontend Developer)', 'INT240', true, 2, 2),
-  ('แผน 1 นักพัฒนาฟรอนเอนด์ (Frontend Developer)', 'INT250', true, 2, 2),
-  ('แผน 1 นักพัฒนาฟรอนเอนด์ (Frontend Developer)', 'INT251', true, 3, 1),
-  ('แผน 1 นักพัฒนาฟรอนเอนด์ (Frontend Developer)', 'INT241', true, 3, 2),
-  ('แผน 2 นักพัฒนาแบ็กเอนด์ (Backend Developer)', 'INT240', true, 2, 2),
-  ('แผน 2 นักพัฒนาแบ็กเอนด์ (Backend Developer)', 'INT242', true, 2, 2),
-  ('แผน 2 นักพัฒนาแบ็กเอนด์ (Backend Developer)', 'INT261', true, 3, 1),
-  ('แผน 2 นักพัฒนาแบ็กเอนด์ (Backend Developer)', 'INT241', true, 3, 2),
-  ('แผน 3 นักพัฒนาฟูลสแตก (Full-Stack Developer)', 'INT240', true, 2, 2),
-  ('แผน 3 นักพัฒนาฟูลสแตก (Full-Stack Developer)', 'INT242', true, 2, 2),
-  ('แผน 3 นักพัฒนาฟูลสแตก (Full-Stack Developer)', 'INT250', true, 2, 2),
-  ('แผน 3 นักพัฒนาฟูลสแตก (Full-Stack Developer)', 'INT251', true, 3, 1),
-  ('แผน 3 นักพัฒนาฟูลสแตก (Full-Stack Developer)', 'INT261', true, 3, 1),
-  ('แผน 3 นักพัฒนาฟูลสแตก (Full-Stack Developer)', 'INT241', true, 3, 2),
-  ('แผน 4 นักพัฒนาปัญญาประดิษฐ์ (AI Developer)', 'INT243', true, 2, 2),
-  ('แผน 4 นักพัฒนาปัญญาประดิษฐ์ (AI Developer)', 'INT270', true, 2, 2),
-  ('แผน 4 นักพัฒนาปัญญาประดิษฐ์ (AI Developer)', 'INT271', true, 3, 1),
-  ('แผน 4 นักพัฒนาปัญญาประดิษฐ์ (AI Developer)', 'INT272', true, 3, 1),
-  ('แผน 4 นักพัฒนาปัญญาประดิษฐ์ (AI Developer)', 'INT273', true, 3, 1),
-  ('แผน 4 นักพัฒนาปัญญาประดิษฐ์ (AI Developer)', 'INT241', true, 3, 2),
-  ('แผน 4 นักพัฒนาปัญญาประดิษฐ์ (AI Developer)', 'INT370', false, 3, 2),
-  ('แผน 4 นักพัฒนาปัญญาประดิษฐ์ (AI Developer)', 'INT371', false, 3, 2),
-  ('แผน 5 นักวิทยาการข้อมูล (Data Scientist)', 'INT243', true, 2, 2),
-  ('แผน 5 นักวิทยาการข้อมูล (Data Scientist)', 'INT270', true, 2, 2),
-  ('แผน 5 นักวิทยาการข้อมูล (Data Scientist)', 'INT282', true, 2, 2),
-  ('แผน 5 นักวิทยาการข้อมูล (Data Scientist)', 'INT271', true, 3, 1),
-  ('แผน 5 นักวิทยาการข้อมูล (Data Scientist)', 'INT272', true, 3, 1),
-  ('แผน 5 นักวิทยาการข้อมูล (Data Scientist)', 'INT285', true, 3, 2),
-  ('แผน 5 นักวิทยาการข้อมูล (Data Scientist)', 'INT297', true, 3, 2),
-  ('แผน 6 นักวิเคราะห์ข้อมูล (Data Analyst)', 'INT243', true, 2, 2),
-  ('แผน 6 นักวิเคราะห์ข้อมูล (Data Analyst)', 'INT270', true, 2, 2),
-  ('แผน 6 นักวิเคราะห์ข้อมูล (Data Analyst)', 'INT282', true, 2, 2),
-  ('แผน 6 นักวิเคราะห์ข้อมูล (Data Analyst)', 'INT271', true, 3, 1),
-  ('แผน 6 นักวิเคราะห์ข้อมูล (Data Analyst)', 'INT272', true, 3, 1),
-  ('แผน 6 นักวิเคราะห์ข้อมูล (Data Analyst)', 'INT285', true, 3, 2),
-  ('แผน 7 วิศวกรข้อมูล (Data Engineer)', 'INT290', true, 2, 2),
-  ('แผน 7 วิศวกรข้อมูล (Data Engineer)', 'INT291', true, 2, 2),
-  ('แผน 7 วิศวกรข้อมูล (Data Engineer)', 'INT292', true, 2, 2),
-  ('แผน 7 วิศวกรข้อมูล (Data Engineer)', 'INT293', true, 3, 1),
-  ('แผน 7 วิศวกรข้อมูล (Data Engineer)', 'INT294', true, 3, 1),
-  ('แผน 7 วิศวกรข้อมูล (Data Engineer)', 'INT295', true, 3, 1),
-  ('แผน 7 วิศวกรข้อมูล (Data Engineer)', 'INT296', true, 3, 2),
-  ('แผน 7 วิศวกรข้อมูล (Data Engineer)', 'INT297', true, 3, 2),
-  ('แผน 8 ผู้ดูแลฐานข้อมูล (Database Administrator)', 'INT290', true, 2, 2),
-  ('แผน 8 ผู้ดูแลฐานข้อมูล (Database Administrator)', 'INT291', true, 2, 2),
-  ('แผน 8 ผู้ดูแลฐานข้อมูล (Database Administrator)', 'INT292', true, 2, 2),
-  ('แผน 8 ผู้ดูแลฐานข้อมูล (Database Administrator)', 'INT293', true, 3, 1),
-  ('แผน 8 ผู้ดูแลฐานข้อมูล (Database Administrator)', 'INT294', true, 3, 1),
-  ('แผน 8 ผู้ดูแลฐานข้อมูล (Database Administrator)', 'INT295', true, 3, 1),
-  ('แผน 9 นักออกแบบประสบการณ์ของผู้ใช้และส่วนต่อประสาน (UX/UI Designer)', 'INT220', true, 2, 2),
-  ('แผน 9 นักออกแบบประสบการณ์ของผู้ใช้และส่วนต่อประสาน (UX/UI Designer)', 'INT221', true, 3, 1),
-  ('แผน 9 นักออกแบบประสบการณ์ของผู้ใช้และส่วนต่อประสาน (UX/UI Designer)', 'INT222', true, 3, 2)
-) AS v(track_name, course_code, is_required, std_year, std_sem)
+  ('Frontend Developer', 'INT240', true, 2, 2),
+  ('Frontend Developer', 'INT250', true, 2, 2),
+  ('Frontend Developer', 'INT251', true, 3, 1),
+  ('Frontend Developer', 'INT241', true, 3, 2),
+  ('Backend Developer', 'INT240', true, 2, 2),
+  ('Backend Developer', 'INT242', true, 2, 2),
+  ('Backend Developer', 'INT261', true, 3, 1),
+  ('Backend Developer', 'INT241', true, 3, 2),
+  ('Full-Stack Developer', 'INT240', true, 2, 2),
+  ('Full-Stack Developer', 'INT242', true, 2, 2),
+  ('Full-Stack Developer', 'INT250', true, 2, 2),
+  ('Full-Stack Developer', 'INT251', true, 3, 1),
+  ('Full-Stack Developer', 'INT261', true, 3, 1),
+  ('Full-Stack Developer', 'INT241', true, 3, 2),
+  ('AI Developer', 'INT243', true, 2, 2),
+  ('AI Developer', 'INT270', true, 2, 2),
+  ('AI Developer', 'INT271', true, 3, 1),
+  ('AI Developer', 'INT272', true, 3, 1),
+  ('AI Developer', 'INT273', true, 3, 1),
+  ('AI Developer', 'INT241', true, 3, 2),
+  ('AI Developer', 'INT370', false, 3, 2),
+  ('AI Developer', 'INT371', false, 3, 2),
+  ('Data Scientist', 'INT243', true, 2, 2),
+  ('Data Scientist', 'INT270', true, 2, 2),
+  ('Data Scientist', 'INT282', true, 2, 2),
+  ('Data Scientist', 'INT271', true, 3, 1),
+  ('Data Scientist', 'INT272', true, 3, 1),
+  ('Data Scientist', 'INT285', true, 3, 2),
+  ('Data Scientist', 'INT297', true, 3, 2),
+  ('Data Analyst', 'INT243', true, 2, 2),
+  ('Data Analyst', 'INT270', true, 2, 2),
+  ('Data Analyst', 'INT282', true, 2, 2),
+  ('Data Analyst', 'INT271', true, 3, 1),
+  ('Data Analyst', 'INT272', true, 3, 1),
+  ('Data Analyst', 'INT285', true, 3, 2),
+  ('Data Engineer', 'INT290', true, 2, 2),
+  ('Data Engineer', 'INT291', true, 2, 2),
+  ('Data Engineer', 'INT292', true, 2, 2),
+  ('Data Engineer', 'INT293', true, 3, 1),
+  ('Data Engineer', 'INT294', true, 3, 1),
+  ('Data Engineer', 'INT295', true, 3, 1),
+  ('Data Engineer', 'INT296', true, 3, 2),
+  ('Data Engineer', 'INT297', true, 3, 2),
+  ('Database Administrator', 'INT290', true, 2, 2),
+  ('Database Administrator', 'INT291', true, 2, 2),
+  ('Database Administrator', 'INT292', true, 2, 2),
+  ('Database Administrator', 'INT293', true, 3, 1),
+  ('Database Administrator', 'INT294', true, 3, 1),
+  ('Database Administrator', 'INT295', true, 3, 1),
+  ('UX/UI Designer', 'INT220', true, 2, 2),
+  ('UX/UI Designer', 'INT221', true, 3, 1),
+  ('UX/UI Designer', 'INT222', true, 3, 2)
+) AS v(track_en, course_code, is_required, std_year, std_sem)
 JOIN curriculum_versions cv ON cv.academic_year = 2567
-JOIN tracks t ON t.track_name = v.track_name AND t.curriculum_version_id = cv.curriculum_version_id
+JOIN tracks t ON t.track_name_en = v.track_en AND t.curriculum_version_id = cv.curriculum_version_id
 JOIN courses c ON c.course_code = v.course_code;
+
+-- AI Developer ปี 3/2: เลือก 1 วิชาจาก INT370 / INT371 / INT47x (3 หน่วยกิต) ตามเล่มหลักสูตร
+INSERT INTO track_courses (track_id, course_id, is_required, standard_year, standard_semester)
+SELECT t.track_id, c.course_id, false, 3, 2
+FROM tracks t JOIN courses c ON c.course_code IN ('INT471', 'INT472', 'INT473')
+WHERE t.track_name_en = 'AI Developer';
+
+UPDATE track_courses tc SET choice_group = 1
+FROM tracks t, courses c
+WHERE tc.track_id = t.track_id AND tc.course_id = c.course_id
+  AND t.track_name_en = 'AI Developer'
+  AND c.course_code IN ('INT370', 'INT371', 'INT471', 'INT472', 'INT473');
 
 COMMIT;
