@@ -9,7 +9,7 @@ Repository นี้ทำหน้าที่จัดเก็บโครง
 3. `mockdata/mock_02_prerequisites_free_electives.sql` — วิชาเลือกเสรี + วิชาบังคับก่อน
 4. `mockdata/mock_03_registrar_users_plans.sql` — mock ทะเบียน, users, study plans, เกรด
 
-เช็คว่าลงครบ: รัน `scripts/check.sql` แล้วทุกแถวใน query แรกต้องเป็น ✅
+เช็คว่าลงครบ: รัน `scripts/check.sql` ทั้งไฟล์ ได้ตารางเดียว ทุกแถวต้องเป็น ✅
 
 ## ล้าง DB แล้วรันใหม่
 ```sql
