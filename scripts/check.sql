@@ -15,9 +15,11 @@ WITH checks (sort, item, actual, expected) AS (
     (113, 'rows: registrar_enrollments',       (SELECT count(*) FROM registrar_enrollments),       167),
     (114, 'rows: users',                       (SELECT count(*) FROM users),                       7),
     (115, 'rows: users_invitations',           (SELECT count(*) FROM users_invitations),           2),
-    (116, 'rows: study_plans',                 (SELECT count(*) FROM study_plans),                 4),
-    (117, 'rows: study_plan_courses',          (SELECT count(*) FROM study_plan_courses),          12),
+    (116, 'rows: study_plans',                 (SELECT count(*) FROM study_plans),                 5),
+    (117, 'rows: study_plan_courses',          (SELECT count(*) FROM study_plan_courses),          13),
     (118, 'rows: student_course_grades',       (SELECT count(*) FROM student_course_grades),       104),
+    (120, 'plans: user ที่มีแผนหลักไม่ครบ 1', (SELECT count(*) FROM (SELECT user_id FROM study_plans GROUP BY user_id HAVING count(*) FILTER (WHERE is_default) <> 1) z), 0),
+    (121, 'plans: user ที่มีเกิน 5 แผน',      (SELECT count(*) FROM (SELECT user_id FROM study_plans GROUP BY user_id HAVING count(*) > 5) z), 0),
     (119, 'fn: mock_clone_student',            (SELECT count(*) FROM pg_proc WHERE proname = 'mock_clone_student'), 1),
     (201, 'credits: รวมทุกหมวด = total_credits', (SELECT sum(required_credits) FROM curriculum_categories),
                                                  (SELECT total_credits FROM curriculum_versions WHERE academic_year = 2567))

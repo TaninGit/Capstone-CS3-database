@@ -228,6 +228,9 @@ CREATE UNIQUE INDEX ON "reviews" ("user_id", "course_id");
 
 CREATE UNIQUE INDEX ON "study_plan_courses" ("study_plan_id", "course_id", "study_year", "study_semester");
 
+-- 1 user มีได้หลายแผน (BE จำกัดไม่เกิน 5) แต่แผนหลัก (is_default) ได้แผนเดียว
+CREATE UNIQUE INDEX ON "study_plans" ("user_id") WHERE "is_default";
+
 CREATE UNIQUE INDEX ON "course_prerequisites" ("course_id", "prerequisite_course_id");
 
 CREATE UNIQUE INDEX ON "registrar_enrollments" ("student_id", "course_id", "academic_year", "semester");

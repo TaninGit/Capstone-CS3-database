@@ -213,7 +213,7 @@ Track คือ "แผนการเรียน" 9 แผนของหล�
 | --- | --- | --- |
 | `users` | ผู้ใช้ทุก role | `student_id` (unique, NULL สำหรับ staff/admin), `email` (unique), `first_name`, `last_name`, `display_name`, `role` |
 | `users_invitations` | อีเมลที่ Admin เชิญล่วงหน้าพร้อม role | `email` (unique), `role` (default `staff`) |
-| `study_plans` | แผนการเรียนของนักศึกษา | `user_id`, `curriculum_version_id`, `track_id` (NULL = ยังไม่เลือก track), `plan_name`, `is_default` |
+| `study_plans` | แผนการเรียนของนักศึกษา 1 คนมีได้หลายแผน (BE จำกัดไม่เกิน 5) | `user_id`, `curriculum_version_id`, `track_id` (NULL = ยังไม่เลือก track), `plan_name`, `is_default` (แผนหลัก ได้แผนเดียวต่อ user — unique index) |
 | `study_plan_courses` | วิชาที่นักศึกษาเพิ่มเองใน plan | PK `study_plan_course_id`, unique (`study_plan_id`, `course_id`, `study_year`, `study_semester`), `study_year` (1–4+), `study_semester` (1–2) |
 | `reviews` | รีวิวรายวิชา 1 คนต่อ 1 วิชา แก้/ลบไม่ได้ | unique (`user_id`, `course_id`), `overall_rating`, `difficulty_rating`, `workload_rating`, `comment`, `status` |
 | `tags`, `course_tags` | tag ของรายวิชา (ยังไม่มีข้อมูล) | `tag_name` (unique) |
@@ -224,6 +224,9 @@ Track คือ "แผนการเรียน" 9 แผนของหล�
 | `review_status` | `visible`, `hidden` |
 
 - วิชาเดียวกันวางแผนได้หลายเทอม (ติด F แล้ววางแผนลงซ้ำ) แต่ไม่ซ้ำในเทอมเดียวกัน plan ไม่เก็บสถานะ: ลงจริงหรือไม่ดูจาก `registrar_enrollments` ผลการเรียนดูจาก `student_course_grades`
+- หลายแผน: ข้อมูลทะเบียนไม่ได้บันทึกลงแผน แต่รวมตอนเปิดดู ทุกแผนจึงเห็นเทอมที่ผ่านไปแล้วเหมือนกัน ต่างกันแค่ track กับวิชาที่วางแผนในอนาคต
+- แผนหลัก = แผนที่ตั้งใจเดินตาม เปิดก่อนทุกครั้ง และเป็นค่าเริ่มต้นของปุ่ม "เพิ่มลงแผน" เปลี่ยนแผนหลักได้เสมอ (ไม่มีข้อมูลต้องย้าย)
+- สร้างแผนใหม่เป็นแผนเปล่าเสมอ (ไม่คัดลอกจากแผนอื่น) แผนแรกของ user เป็นแผนหลักอัตโนมัติ
 - plan เก็บเฉพาะวิชาที่นักศึกษาเพิ่มเอง วิชาบังคับ planner ดึงจาก `curriculum_category_courses` กับ `track_courses` อัตโนมัติ
 - `study_year`/`study_semester` เป็นชั้นปีของนักศึกษา ไม่ใช่ปีการศึกษา (ต่างจาก mock ทะเบียน)
 - ปีที่เกิน 4 ไม่เก็บใน DB: frontend แสดงตารางเปล่า max(`study_year`)+1 จนกว่าจะเพิ่มวิชา
@@ -252,7 +255,7 @@ Track คือ "แผนการเรียน" 9 แผนของหล�
 | 69130500001 | ปี 1 เทอม 1 | — | ยังไม่มี plan: backend ต้องสร้างให้ตอนเปิด planner ครั้งแรก |
 | 68130500002 | ปี 2 เทอม 1 | — | plan ที่ `track_id` = NULL, ยังไม่กรอกเกรด |
 | 67130500003 | ปี 3 เทอม 1 | Full-Stack | เรียนตามแผนปกติ |
-| 67130500004 | ปี 3 เทอม 1 | AI | F INT133 (2567/2) ลงซ้ำ 2568/1, W INT185 (2568/2) ลงใหม่ 2569/1 |
+| 67130500004 | ปี 3 เทอม 1 | AI (แผนหลัก) + Data Scientist | F INT133 (2567/2) ลงซ้ำ 2568/1, W INT185 (2568/2) ลงใหม่ 2569/1, มี 2 แผน: แผนหลัก AI + แผน "ลองสาย Data Scientist" |
 | 67130500005 | ปี 3 เทอม 1 | Data Engineer | GEN341 วางแผนไว้ปี 2/1 แต่ไม่ได้ลงจริง |
 
 - users mock: นักศึกษา 5 คน + `staff.mock@ad.sit.kmutt.ac.th` + `admin.mock@ad.sit.kmutt.ac.th` (login จริงไม่ได้ ไม่มี Microsoft account)
@@ -296,6 +299,9 @@ ORDER BY 1, 2, 3;
 
 - [ ] เก็บหน่วยกิตวิชาเลือกหมวด 2.2 ต่อเทอมต่อ track ตามเล่ม (เช่น FE ปี 3/1 = 3 หน่วยกิต) ให้ planner บอกได้ว่าเทอมนั้นต้องเลือกอีกกี่หน่วยกิต
 - [ ] ตรวจชื่อไทยวิชา LNG/SSC และชื่ออังกฤษ/หน่วยกิต GEN212, GEN222, GEN225, GEN354 กับเอกสารจริง
+
+- [ ] API หลายแผนที่ยังไม่ทำ (sprint ถัดไป): เปลี่ยนชื่อ, เปลี่ยน track, ตั้งเป็นแผนหลัก, ลบแผน (แผนหลักลบไม่ได้ และต้องเหลืออย่างน้อย 1 แผน)
+- [ ] วิชาที่บันทึกไว้ (favorite): เพิ่มตาราง `saved_courses (user_id, course_id, created_at)` ตอนทำฟีเจอร์
 
 Backend ต้องแก้ตาม schema ชุดนี้:
 

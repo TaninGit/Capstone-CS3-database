@@ -9,6 +9,7 @@
 --  68130500002  ปี 2 เทอม 1  ยังไม่เลือก track (study_plans.track_id = NULL)
 --  67130500003  ปี 3 เทอม 1  แผน 3 Full-Stack  เรียนตามแผนปกติ
 --  67130500004  ปี 3 เทอม 1  แผน 4 AI          ติด F INT133 (2567/2) ลงซ้ำ 2568/1, W INT185 (2568/2) ลงใหม่ 2569/1
+--                                                 มี 2 แผน: AI (แผนหลัก) + 'ลองสาย Data Scientist'
 --  67130500005  ปี 3 เทอม 1  แผน 7 Data Eng.   มีวิชาที่วางแผนไว้ในเทอมที่ผ่านมาแต่ไม่ได้ลงจริง (GEN341)
 --
 -- อยากให้ account ตัวเอง (login จริง) มีข้อมูล: ดูฟังก์ชัน mock_clone_student ท้ายไฟล์
@@ -131,6 +132,21 @@ FROM (VALUES
 JOIN users u ON u.student_id = v.student_id
 JOIN study_plans sp ON sp.user_id = u.user_id AND sp.is_default
 JOIN courses c ON c.course_code = v.course_code;
+
+-- 4.1) แผนที่ 2 (ไม่ใช่แผนหลัก) ของ 67130500004: ลองดูสาย Data Scientist — ทดสอบ GET /v1/plans หลายแผน
+INSERT INTO study_plans (user_id, curriculum_version_id, track_id, plan_name, is_default, created_at, updated_at)
+SELECT u.user_id, cv.curriculum_version_id, t.track_id, 'ลองสาย Data Scientist', false, now(), now()
+FROM users u
+JOIN curriculum_versions cv ON cv.academic_year = 2567
+JOIN tracks t ON t.track_name_en = 'Data Scientist'
+WHERE u.student_id = '67130500004';
+
+INSERT INTO study_plan_courses (study_plan_id, course_id, study_year, study_semester)
+SELECT sp.study_plan_id, c.course_id, 4, 1
+FROM users u
+JOIN study_plans sp ON sp.user_id = u.user_id AND sp.plan_name = 'ลองสาย Data Scientist'
+JOIN courses c ON c.course_code = 'INT381'
+WHERE u.student_id = '67130500004';
 
 -- 5) student_course_grades: เทอมที่จบแล้วเท่านั้น (เกรดแบบสุ่มคงที่) — 68130500002 ยังไม่กรอกเกรด
 INSERT INTO student_course_grades (user_id, enrollment_id, grade, created_at, updated_at)
