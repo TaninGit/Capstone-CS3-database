@@ -102,7 +102,7 @@ INSERT INTO users_invitations (email, role) VALUES
 -- plan เก็บเฉพาะวิชาที่นักศึกษาเพิ่มเอง (วิชาบังคับ planner ดึงจากหลักสูตร/track อัตโนมัติ)
 -- study_year/study_semester เป็นชั้นปี/เทอมของนักศึกษา (1-4 / 1-2) ไม่ใช่ปีการศึกษา
 INSERT INTO study_plans (user_id, curriculum_version_id, track_id, plan_name, is_default, created_at, updated_at)
-SELECT u.user_id, cv.curriculum_version_id, t.track_id, 'แผนการเรียนของฉัน', true, now(), now()
+SELECT u.user_id, cv.curriculum_version_id, t.track_id, 'แผนที่ 1', true, now(), now()
 FROM (VALUES
   ('68130500002', NULL),
   ('67130500003', 'Full-Stack Developer'),
