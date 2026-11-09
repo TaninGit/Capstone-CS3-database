@@ -216,6 +216,7 @@ Track คือ "แผนการเรียน" 9 แผนของหล�
 | `study_plans` | แผนการเรียนของนักศึกษา 1 คนมีได้หลายแผน (BE จำกัดไม่เกิน 5) | `user_id`, `curriculum_version_id`, `track_id` (NULL = ยังไม่เลือก track), `plan_name`, `is_default` (แผนหลัก ได้แผนเดียวต่อ user — unique index) |
 | `study_plan_courses` | วิชาที่นักศึกษาเพิ่มเองใน plan | PK `study_plan_course_id`, unique (`study_plan_id`, `course_id`, `study_year`, `study_semester`), `study_year` (1–4+), `study_semester` (1–2) |
 | `reviews` | รีวิวรายวิชา 1 คนต่อ 1 วิชา แก้/ลบไม่ได้ | unique (`user_id`, `course_id`), `overall_rating`, `difficulty_rating`, `workload_rating`, `comment`, `status` |
+| `saved_courses` | วิชาที่นักศึกษาบันทึกไว้ (favorite) | unique (`user_id`, `course_id`), `created_at` |
 | `tags`, `course_tags` | tag ของรายวิชา (ยังไม่มีข้อมูล) | `tag_name` (unique) |
 
 | enum | ค่า |
@@ -301,7 +302,6 @@ ORDER BY 1, 2, 3;
 - [ ] ตรวจชื่อไทยวิชา LNG/SSC และชื่ออังกฤษ/หน่วยกิต GEN212, GEN222, GEN225, GEN354 กับเอกสารจริง
 
 - [ ] API หลายแผนที่ยังไม่ทำ (sprint ถัดไป): เปลี่ยนชื่อ, เปลี่ยน track, ตั้งเป็นแผนหลัก, ลบแผน (แผนหลักลบไม่ได้ และต้องเหลืออย่างน้อย 1 แผน)
-- [ ] วิชาที่บันทึกไว้ (favorite): เพิ่มตาราง `saved_courses (user_id, course_id, created_at)` ตอนทำฟีเจอร์
 
 Backend ต้องแก้ตาม schema ชุดนี้:
 
