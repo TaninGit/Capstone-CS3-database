@@ -8,6 +8,7 @@ Repository นี้ทำหน้าที่จัดเก็บโครง
 2. `mockdata/mock.sql` — หลักสูตร IT 2567, รายวิชา, หมวด, tracks
 3. `mockdata/mock_02_prerequisites_free_electives.sql` — วิชาเลือกเสรี + วิชาบังคับก่อน
 4. `mockdata/mock_03_registrar_users_plans.sql` — mock ทะเบียน, users, study plans, เกรด
+5. `mockdata/mock_04_reviews.sql` — รีวิวรายวิชา (16 รีวิว, 1 hidden) — 67130500003 ไม่มีรีวิว ใช้ทดสอบเขียนรีวิว
 
 เช็คว่าลงครบ: รัน `scripts/check.sql` ทั้งไฟล์ ได้ตารางเดียว ทุกแถวต้องเป็น ✅
 
